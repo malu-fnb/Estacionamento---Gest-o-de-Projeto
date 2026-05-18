@@ -1,34 +1,49 @@
+import { AccessType } from '@prisma/client';
 import { prisma } from '../../database/prisma';
 
 export class ParkingRecordRepository {
-  async findOpenRecordByVehicleId(vehicleId: string) {
-    return prisma.parkingRecord.findFirst({
-      where: {
-        vehicleId,
-        exitAt: null,
-      },
+  async findMany() {
+    return prisma.parkingRecord.findMany({
       include: {
         vehicle: {
           include: {
-            owner: true,
+            employee: true,
           },
         },
+        gatekeeper: true,
+      },
+      orderBy: {
+        timestamp: 'desc',
       },
     });
   }
 
-  async createEntry(vehicleId: string, notes?: string | null) {
-    return prisma.parkingRecord.create({
-      data: {
+  async findLastByVehicleId(vehicleId: string) {
+    return prisma.parkingRecord.findFirst({
+      where: {
         vehicleId,
-        notes: notes || null,
       },
+      orderBy: {
+        timestamp: 'desc',
+      },
+    });
+  }
+
+  async create(data: {
+    vehicleId: string;
+    gatekeeperId?: string | null;
+    type: AccessType;
+    notes?: string | null;
+  }) {
+    return prisma.parkingRecord.create({
+      data,
       include: {
         vehicle: {
           include: {
-            owner: true,
+            employee: true,
           },
         },
+        gatekeeper: true,
       },
     });
   }
