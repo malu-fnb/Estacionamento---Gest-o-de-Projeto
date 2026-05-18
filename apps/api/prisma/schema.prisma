@@ -7,46 +7,71 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Owner {
-  id        String    @id @default(uuid())
-  name      String
-  document  String?
-  phone     String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  vehicles  Vehicle[]
-
-  @@map("owners")
+enum AccessType {
+  ENTRY
+  EXIT
 }
 
-model Vehicle {
+model Gatekeeper {
   id        String   @id @default(uuid())
-  plate     String   @unique
-  model     String?
-  color     String?
-  ownerId   String
+  name      String
+  phone     String?
+  email     String   @unique
+  cpf       String   @unique
+  password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  owner     Owner    @relation(fields: [ownerId], references: [id])
   records   ParkingRecord[]
 
-  @@index([ownerId])
+  @@map("gatekeepers")
+}
+
+model Employee {
+  id         String   @id @default(uuid())
+  name       String
+  department String?
+  ra         String   @unique
+  email      String?
+  phone      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  vehicles   Vehicle[]
+
+  @@map("employees")
+}
+
+model Vehicle {
+  id         String   @id @default(uuid())
+  employeeId String
+  plate      String   @unique
+  make       String?
+  model      String?
+  color      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  records    ParkingRecord[]
+
+  @@index([employeeId])
   @@map("vehicles")
 }
 
 model ParkingRecord {
-  id        String    @id @default(uuid())
-  vehicleId String
-  entryAt   DateTime  @default(now())
-  exitAt    DateTime?
-  notes     String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id           String      @id @default(uuid())
+  vehicleId    String
+  gatekeeperId String?
+  type         AccessType
+  timestamp    DateTime    @default(now())
+  notes        String?
+  createdAt    DateTime    @default(now())
 
-  vehicle   Vehicle   @relation(fields: [vehicleId], references: [id])
+  vehicle      Vehicle     @relation(fields: [vehicleId], references: [id])
+  gatekeeper   Gatekeeper? @relation(fields: [gatekeeperId], references: [id])
 
   @@index([vehicleId])
+  @@index([gatekeeperId])
   @@map("parking_records")
 }
