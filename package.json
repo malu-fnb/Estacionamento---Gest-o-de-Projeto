@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "workspaces": [
-    "apps/api",
-    "apps/web",
-    "packages/shared"
+    "apps/api"
   ],
   "scripts": {
     "dev:api": "npm -w apps/api run dev",
