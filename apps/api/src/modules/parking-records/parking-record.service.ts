@@ -1,6 +1,6 @@
 import { AccessType } from '@prisma/client';
 import { AppError } from '../../shared/errors/AppError';
-import { normalizePlate } from '../../shared/utils/normalizePlate';
+import { normalizeAndValidatePlate } from '../../shared/utils/normalizePlate';
 import { VehicleRepository } from '../vehicles/vehicle.repository';
 import { ParkingRecordRepository } from './parking-record.repository';
 
@@ -8,7 +8,7 @@ function toAccessLog(record: any) {
   return {
     id: record.id,
     vehiclePlate: record.vehicle.plate,
-    type: record.type === 'ENTRY' ? 'entry' : 'exit',
+    type: record.type === AccessType.ENTRY ? 'entry' : 'exit',
     timestamp: record.timestamp,
     ownerName: record.vehicle.employee.name,
     gatekeeperName: record.gatekeeper?.name || 'Sistema',
@@ -33,12 +33,12 @@ export class ParkingRecordService {
     gatekeeperName?: string | null;
     notes?: string | null;
   }) {
-    const plate = normalizePlate(data.plate);
+    const plate = normalizeAndValidatePlate(data.plate);
 
     const vehicle = await this.vehicleRepository.findByPlate(plate);
 
     if (!vehicle) {
-      throw new AppError(`Plate ${plate} not found`, 404);
+      throw new AppError(`Placa ${plate} não encontrada.`, 404);
     }
 
     const lastRecord = await this.parkingRecordRepository.findLastByVehicleId(
@@ -46,7 +46,10 @@ export class ParkingRecordService {
     );
 
     if (lastRecord?.type === AccessType.ENTRY) {
-      throw new AppError('This vehicle already has an open entry', 409);
+      throw new AppError(
+          'Entrada não permitida. Este veículo já possui uma entrada em aberto.',
+          409,
+      );
     }
 
     const record = await this.parkingRecordRepository.create({
@@ -71,20 +74,30 @@ export class ParkingRecordService {
     gatekeeperName?: string | null;
     notes?: string | null;
   }) {
-    const plate = normalizePlate(data.plate);
+    const plate = normalizeAndValidatePlate(data.plate);
 
     const vehicle = await this.vehicleRepository.findByPlate(plate);
 
     if (!vehicle) {
-      throw new AppError(`Plate ${plate} not found`, 404);
+      throw new AppError(`Placa ${plate} não encontrada.`, 404);
     }
 
     const lastRecord = await this.parkingRecordRepository.findLastByVehicleId(
         vehicle.id,
     );
 
-    if (!lastRecord || lastRecord.type === AccessType.EXIT) {
-      throw new AppError('This vehicle does not have an open entry', 409);
+    if (!lastRecord) {
+      throw new AppError(
+          'Saída não permitida. Este veículo ainda não possui registro de entrada.',
+          409,
+      );
+    }
+
+    if (lastRecord.type === AccessType.EXIT) {
+      throw new AppError(
+          'Saída não permitida. Este veículo já teve a saída registrada.',
+          409,
+      );
     }
 
     const record = await this.parkingRecordRepository.create({
