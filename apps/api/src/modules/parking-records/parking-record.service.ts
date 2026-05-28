@@ -1,6 +1,6 @@
 import { AccessType } from '@prisma/client';
 import { AppError } from '../../shared/errors/AppError';
-import { normalizePlate } from '../../shared/utils/normalizePlate';
+import { normalizeAndValidatePlate } from '../../shared/utils/normalizePlate';
 import { VehicleRepository } from '../vehicles/vehicle.repository';
 import { ParkingRecordRepository } from './parking-record.repository';
 
@@ -33,7 +33,7 @@ export class ParkingRecordService {
     gatekeeperName?: string | null;
     notes?: string | null;
   }) {
-    const plate = normalizePlate(data.plate);
+    const plate = normalizeAndValidatePlate(data.plate);
 
     const vehicle = await this.vehicleRepository.findByPlate(plate);
 
@@ -71,7 +71,7 @@ export class ParkingRecordService {
     gatekeeperName?: string | null;
     notes?: string | null;
   }) {
-    const plate = normalizePlate(data.plate);
+    const plate = normalizeAndValidatePlate(data.plate);
 
     const vehicle = await this.vehicleRepository.findByPlate(plate);
 

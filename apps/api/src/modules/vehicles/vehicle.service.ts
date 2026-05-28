@@ -1,5 +1,5 @@
 import { AppError } from '../../shared/errors/AppError';
-import { normalizePlate } from '../../shared/utils/normalizePlate';
+import { normalizeAndValidatePlate } from '../../shared/utils/normalizePlate';
 import { EmployeeRepository } from '../employees/employee.repository';
 import { VehicleRepository } from './vehicle.repository';
 
@@ -38,7 +38,7 @@ export class VehicleService {
         color?: string | null;
     }) {
         const ownerRa = data.ownerRa.trim().toUpperCase();
-        const plate = normalizePlate(data.plate);
+        const plate = normalizeAndValidatePlate(data.plate);
 
         const employee = await this.employeeRepository.findByRa(ownerRa);
 
@@ -80,7 +80,7 @@ export class VehicleService {
     }
 
     async findByPlate(plateInput: string) {
-        const plate = normalizePlate(plateInput);
+        const plate = normalizeAndValidatePlate(plateInput);
 
         const vehicle = await this.vehicleRepository.findByPlate(plate);
 
