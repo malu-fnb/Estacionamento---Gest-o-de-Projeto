@@ -97,6 +97,14 @@ export class VehicleRepository {
   }
 
   async delete(id: string) {
+    return prisma.vehicle.delete({
+      where: {
+        id,
+      },
+    });
+  }
+
+  async deleteWithRecords(id: string) {
     return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.parkingRecord.deleteMany({
         where: {
