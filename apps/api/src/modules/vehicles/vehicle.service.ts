@@ -33,31 +33,38 @@ export class VehicleService {
     async create(data: {
         ownerRa: string;
         plate: string;
-        make?: string | null;
-        model?: string | null;
-        color?: string | null;
+        make: string;
+        model: string;
+        color: string;
     }) {
         const ownerRa = data.ownerRa.trim().toUpperCase();
         const plate = normalizeAndValidatePlate(data.plate);
+        const make = data.make.trim();
+        const model = data.model.trim();
+        const color = data.color.trim();
+
+        if (!make || !model || !color) {
+            throw new AppError('Marca, modelo e cor predominante são obrigatórios.', 400);
+        }
 
         const employee = await this.employeeRepository.findByRa(ownerRa);
 
         if (!employee) {
-            throw new AppError('Employee RA not found', 404);
+            throw new AppError('Funcionário não encontrado para este registro.', 404);
         }
 
         const existingVehicle = await this.vehicleRepository.findByPlate(plate);
 
         if (existingVehicle) {
-            throw new AppError('Vehicle plate already registered', 409);
+            throw new AppError('Esta placa já está cadastrada no sistema.', 409);
         }
 
         const vehicle = await this.vehicleRepository.create({
             employeeId: employee.id,
             plate,
-            make: data.make?.trim() || null,
-            model: data.model?.trim() || null,
-            color: data.color?.trim() || null,
+            make,
+            model,
+            color,
         });
 
         return toFrontVehicle(vehicle);
@@ -73,7 +80,7 @@ export class VehicleService {
         const vehicle = await this.vehicleRepository.findById(id);
 
         if (!vehicle) {
-            throw new AppError('Vehicle not found', 404);
+            throw new AppError('Veículo não encontrado.', 404);
         }
 
         return toFrontVehicle(vehicle);
@@ -85,7 +92,7 @@ export class VehicleService {
         const vehicle = await this.vehicleRepository.findByPlate(plate);
 
         if (!vehicle) {
-            throw new AppError('Vehicle not found', 404);
+            throw new AppError('Veículo não encontrado.', 404);
         }
 
         return toFrontVehicle(vehicle);
@@ -95,9 +102,9 @@ export class VehicleService {
         const vehicle = await this.vehicleRepository.findById(id);
 
         if (!vehicle) {
-            throw new AppError('Vehicle not found', 404);
+            throw new AppError('Veículo não encontrado.', 404);
         }
 
-        return this.vehicleRepository.delete(id);
+        await this.vehicleRepository.deleteWithRecords(id);
     }
 }
