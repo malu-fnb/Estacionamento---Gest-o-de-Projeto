@@ -1,12 +1,13 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '../../database/prisma';
 
 export class VehicleRepository {
   async create(data: {
     employeeId: string;
     plate: string;
-    make?: string | null;
-    model?: string | null;
-    color?: string | null;
+    make: string;
+    model: string;
+    color: string;
   }) {
     return prisma.vehicle.create({
       data,
@@ -24,27 +25,32 @@ export class VehicleRepository {
               {
                 plate: {
                   contains: search,
+                  mode: 'insensitive',
                 },
               },
               {
                 make: {
                   contains: search,
+                  mode: 'insensitive',
                 },
               },
               {
                 model: {
                   contains: search,
+                  mode: 'insensitive',
                 },
               },
               {
                 color: {
                   contains: search,
+                  mode: 'insensitive',
                 },
               },
               {
                 employee: {
                   name: {
                     contains: search,
+                    mode: 'insensitive',
                   },
                 },
               },
@@ -52,6 +58,7 @@ export class VehicleRepository {
                 employee: {
                   ra: {
                     contains: search,
+                    mode: 'insensitive',
                   },
                 },
               },
@@ -90,10 +97,18 @@ export class VehicleRepository {
   }
 
   async delete(id: string) {
-    return prisma.vehicle.delete({
-      where: {
-        id,
-      },
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      await tx.parkingRecord.deleteMany({
+        where: {
+          vehicleId: id,
+        },
+      });
+
+      return tx.vehicle.delete({
+        where: {
+          id,
+        },
+      });
     });
   }
 }
