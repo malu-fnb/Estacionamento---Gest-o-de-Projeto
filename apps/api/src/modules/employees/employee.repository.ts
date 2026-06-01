@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '../../database/prisma';
 
 export class EmployeeRepository {
@@ -16,10 +17,35 @@ export class EmployeeRepository {
             where: search
                 ? {
                     OR: [
-                        { name: { contains: search } },
-                        { department: { contains: search } },
-                        { ra: { contains: search } },
-                        { email: { contains: search } },
+                        {
+                            name: {
+                                contains: search,
+                                mode: 'insensitive',
+                            },
+                        },
+                        {
+                            department: {
+                                contains: search,
+                                mode: 'insensitive',
+                            },
+                        },
+                        {
+                            ra: {
+                                contains: search,
+                                mode: 'insensitive',
+                            },
+                        },
+                        {
+                            email: {
+                                contains: search,
+                                mode: 'insensitive',
+                            },
+                        },
+                        {
+                            phone: {
+                                contains: search,
+                            },
+                        },
                     ],
                 }
                 : undefined,
@@ -51,6 +77,45 @@ export class EmployeeRepository {
         });
     }
 
+    async findByEmail(email: string) {
+        return prisma.employee.findFirst({
+            where: {
+                email: {
+                    equals: email,
+                    mode: 'insensitive',
+                },
+            },
+            include: {
+                vehicles: true,
+            },
+        });
+    }
+
+    async findByPhone(phone: string) {
+        return prisma.employee.findUnique({
+            where: {
+                phone,
+            },
+            include: {
+                vehicles: true,
+            },
+        });
+    }
+
+    async findByName(name: string) {
+        return prisma.employee.findFirst({
+            where: {
+                name: {
+                    equals: name,
+                    mode: 'insensitive',
+                },
+            },
+            include: {
+                vehicles: true,
+            },
+        });
+    }
+
     async update(
         id: string,
         data: {
@@ -66,6 +131,9 @@ export class EmployeeRepository {
                 id,
             },
             data,
+            include: {
+                vehicles: true,
+            },
         });
     }
 

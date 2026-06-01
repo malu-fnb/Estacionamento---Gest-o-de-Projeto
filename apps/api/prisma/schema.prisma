@@ -29,11 +29,11 @@ model Gatekeeper {
 
 model Employee {
   id         String   @id @default(uuid())
-  name       String
+  name       String   @unique
   department String?
   ra         String   @unique
-  email      String?
-  phone      String?
+  email      String?  @unique
+  phone      String?  @unique
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -46,9 +46,9 @@ model Vehicle {
   id         String   @id @default(uuid())
   employeeId String
   plate      String   @unique
-  make       String?
-  model      String?
-  color      String?
+  make       String
+  model      String
+  color      String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -74,4 +74,17 @@ model ParkingRecord {
   @@index([vehicleId])
   @@index([gatekeeperId])
   @@map("parking_records")
+}
+
+model VisitorRecord {
+  id              String     @id @default(uuid())
+  visitorName     String
+  visitorDocument String?
+  plate           String
+  type            AccessType
+  timestamp       DateTime   @default(now())
+  notes           String?
+  createdAt       DateTime   @default(now())
+
+  @@map("visitor_records")
 }
