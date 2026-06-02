@@ -39,13 +39,6 @@ export class VehicleService {
     }) {
         const ownerRa = data.ownerRa.trim().toUpperCase();
         const plate = normalizeAndValidatePlate(data.plate);
-        const make = data.make.trim();
-        const model = data.model.trim();
-        const color = data.color.trim();
-
-        if (!make || !model || !color) {
-            throw new AppError('Marca, modelo e cor predominante são obrigatórios.', 400);
-        }
 
         const employee = await this.employeeRepository.findByRa(ownerRa);
 
@@ -53,18 +46,22 @@ export class VehicleService {
             throw new AppError('Funcionário não encontrado para este registro.', 404);
         }
 
-        const existingVehicle = await this.vehicleRepository.findByPlate(plate);
+        const existingVehicleForEmployee =
+            await this.vehicleRepository.findByPlateAndEmployeeId(plate, employee.id);
 
-        if (existingVehicle) {
-            throw new AppError('Esta placa já está cadastrada no sistema.', 409);
+        if (existingVehicleForEmployee) {
+            throw new AppError(
+                'Esta placa já está vinculada a este funcionário.',
+                409,
+            );
         }
 
         const vehicle = await this.vehicleRepository.create({
             employeeId: employee.id,
             plate,
-            make,
-            model,
-            color,
+            make: data.make.trim(),
+            model: data.model.trim(),
+            color: data.color.trim(),
         });
 
         return toFrontVehicle(vehicle);
@@ -89,13 +86,20 @@ export class VehicleService {
     async findByPlate(plateInput: string) {
         const plate = normalizeAndValidatePlate(plateInput);
 
-        const vehicle = await this.vehicleRepository.findByPlate(plate);
+        const vehicles = await this.vehicleRepository.findManyByPlate(plate);
 
-        if (!vehicle) {
+        if (vehicles.length === 0) {
             throw new AppError('Veículo não encontrado.', 404);
         }
 
-        return toFrontVehicle(vehicle);
+        if (vehicles.length > 1) {
+            throw new AppError(
+                'Existe mais de um veículo com esta placa. Informe também o registro do proprietário.',
+                409,
+            );
+        }
+
+        return toFrontVehicle(vehicles[0]);
     }
 
     async delete(id: string) {
@@ -105,6 +109,6 @@ export class VehicleService {
             throw new AppError('Veículo não encontrado.', 404);
         }
 
-        await this.vehicleRepository.deleteWithRecords(id);
+        return this.vehicleRepository.deleteWithRecords(id);
     }
 }

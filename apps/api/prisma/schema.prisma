@@ -29,7 +29,7 @@ model Gatekeeper {
 
 model Employee {
   id         String   @id @default(uuid())
-  name       String   @unique
+  name       String
   department String?
   ra         String   @unique
   email      String?  @unique
@@ -45,7 +45,7 @@ model Employee {
 model Vehicle {
   id         String   @id @default(uuid())
   employeeId String
-  plate      String   @unique
+  plate      String
   make       String
   model      String
   color      String
@@ -56,6 +56,8 @@ model Vehicle {
   records    ParkingRecord[]
 
   @@index([employeeId])
+  @@index([plate])
+  @@unique([employeeId, plate])
   @@map("vehicles")
 }
 

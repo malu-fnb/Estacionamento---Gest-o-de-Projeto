@@ -86,9 +86,35 @@ export class VehicleRepository {
   }
 
   async findByPlate(plate: string) {
-    return prisma.vehicle.findUnique({
+    return prisma.vehicle.findFirst({
       where: {
         plate,
+      },
+      include: {
+        employee: true,
+      },
+    });
+  }
+
+  async findManyByPlate(plate: string) {
+    return prisma.vehicle.findMany({
+      where: {
+        plate,
+      },
+      include: {
+        employee: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async findByPlateAndEmployeeId(plate: string, employeeId: string) {
+    return prisma.vehicle.findFirst({
+      where: {
+        plate,
+        employeeId,
       },
       include: {
         employee: true,

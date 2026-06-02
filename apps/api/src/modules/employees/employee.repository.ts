@@ -1,4 +1,3 @@
-import { Prisma } from '@prisma/client';
 import { prisma } from '../../database/prisma';
 
 export class EmployeeRepository {
@@ -9,7 +8,12 @@ export class EmployeeRepository {
         email?: string | null;
         phone?: string | null;
     }) {
-        return prisma.employee.create({ data });
+        return prisma.employee.create({
+            data,
+            include: {
+                vehicles: true,
+            },
+        });
     }
 
     async findMany(search?: string) {
@@ -49,6 +53,9 @@ export class EmployeeRepository {
                     ],
                 }
                 : undefined,
+            include: {
+                vehicles: true,
+            },
             orderBy: {
                 createdAt: 'desc',
             },
@@ -92,23 +99,9 @@ export class EmployeeRepository {
     }
 
     async findByPhone(phone: string) {
-        return prisma.employee.findUnique({
-            where: {
-                phone,
-            },
-            include: {
-                vehicles: true,
-            },
-        });
-    }
-
-    async findByName(name: string) {
         return prisma.employee.findFirst({
             where: {
-                name: {
-                    equals: name,
-                    mode: 'insensitive',
-                },
+                phone,
             },
             include: {
                 vehicles: true,

@@ -37,29 +37,28 @@ export class EmployeeService {
     constructor(private readonly employeeRepository = new EmployeeRepository()) {}
 
     private async validateUniqueFields(data: {
-        name: string;
         ra: string;
         email?: string | null;
         phone?: string | null;
         ignoreEmployeeId?: string;
     }) {
-        const existingName = await this.employeeRepository.findByName(data.name);
-
-        if (existingName && existingName.id !== data.ignoreEmployeeId) {
-            throw new AppError('Já existe um funcionário cadastrado com este nome.', 409);
-        }
-
         const existingRa = await this.employeeRepository.findByRa(data.ra);
 
         if (existingRa && existingRa.id !== data.ignoreEmployeeId) {
-            throw new AppError('Já existe um funcionário cadastrado com este registro.', 409);
+            throw new AppError(
+                'Já existe um funcionário cadastrado com este registro.',
+                409,
+            );
         }
 
         if (data.email) {
             const existingEmail = await this.employeeRepository.findByEmail(data.email);
 
             if (existingEmail && existingEmail.id !== data.ignoreEmployeeId) {
-                throw new AppError('Já existe um funcionário cadastrado com este e-mail.', 409);
+                throw new AppError(
+                    'Já existe um funcionário cadastrado com este e-mail.',
+                    409,
+                );
             }
         }
 
@@ -67,7 +66,10 @@ export class EmployeeService {
             const existingPhone = await this.employeeRepository.findByPhone(data.phone);
 
             if (existingPhone && existingPhone.id !== data.ignoreEmployeeId) {
-                throw new AppError('Já existe um funcionário cadastrado com este celular.', 409);
+                throw new AppError(
+                    'Já existe um funcionário cadastrado com este celular.',
+                    409,
+                );
             }
         }
     }
@@ -85,7 +87,6 @@ export class EmployeeService {
         const phone = normalizePhone(data.phone);
 
         await this.validateUniqueFields({
-            name,
             ra,
             email,
             phone,
@@ -142,7 +143,6 @@ export class EmployeeService {
             data.phone !== undefined ? normalizePhone(data.phone) : employee.phone;
 
         await this.validateUniqueFields({
-            name,
             ra,
             email,
             phone,

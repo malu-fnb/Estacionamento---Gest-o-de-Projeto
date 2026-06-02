@@ -2,11 +2,11 @@ import { z } from 'zod';
 
 export const createVehicleSchema = z.object({
     body: z.object({
-        ownerRa: z.string().trim().min(1, 'Registro do proprietário é obrigatório'),
-        plate: z.string().trim().min(1, 'Placa é obrigatória'),
-        make: z.string().trim().min(1, 'Marca é obrigatória'),
-        model: z.string().trim().min(1, 'Modelo é obrigatório'),
-        color: z.string().trim().min(1, 'Cor predominante é obrigatória'),
+        ownerRa: z.string().trim().min(1, 'O registro do proprietário é obrigatório.'),
+        plate: z.string().trim().min(1, 'A placa é obrigatória.'),
+        make: z.string().trim().min(1, 'A marca do veículo é obrigatória.'),
+        model: z.string().trim().min(1, 'O modelo do veículo é obrigatório.'),
+        color: z.string().trim().min(1, 'A cor predominante é obrigatória.'),
     }),
 });
 
